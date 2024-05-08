@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='ADA_public',
+    name='ADApublic',
     version='1.0.0',
     url='https://github.com/peterhaupt/ADA_public.git',
     author='Google',
