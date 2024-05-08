@@ -49,22 +49,34 @@ def publish_message(project_id, topic_id, message):
     print("Future returned:", future.result())
 
 
+def list_subscriptions(project_id, topic_id):
+    publisher = pubsub_v1.PublisherClient()
+    topic_path = publisher.topic_path(project_id, topic_id)
+
+    response = publisher.list_topic_subscriptions(request={"topic": topic_path})
+    return [sub for sub in response]
+
+
 def create_subscription(project_id, topic_id, subscription_id):
+    publisher = pubsub_v1.PublisherClient()
+    subscription_path = publisher.subscription_path(project_id, subscription_id)
+
+    if subscription_path in list_subscriptions(project_id, topic_id):
+        logging.info(f"Subscription {subscription_id} already exists.")
+        return
+
     try:
-        publisher = pubsub_v1.PublisherClient()
         subscriber = pubsub_v1.SubscriberClient()
         topic_path = publisher.topic_path(project_id, topic_id)
-        subscription_path = subscriber.subscription_path(project_id, subscription_id)
         with subscriber:
             subscription = subscriber.create_subscription(
                 request={"name": subscription_path, "topic": topic_path}
             )
         logging.info(f"Subscription created: {subscription}")
     except Exception as ex:
-        logging.info(
+        logging.error(
             f"Error creating subscription {subscription_id} , the exception: {ex}."
         )
-        logging.info(ex)
 
 
 def callback(message):
