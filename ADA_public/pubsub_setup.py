@@ -54,13 +54,23 @@ def create_subscription(project_id, topic_id, subscription_id):
         logging.info(ex)
 
 
-def pull_message(project, subscription):
+def callback(message):
+    logging.info(f"Received {message}.")
+
+    # Do something with the message
+    print(f"Received message: {message.data}.")
+    print("Made prediction: 0.5")
+
+    message.ack()
+
+
+def pull_message(project, subscription, function_to_call: callable = callback):
     subscription_name = "projects/{project_id}/subscriptions/{sub}".format(
         project_id=project, sub=subscription
     )
 
     with pubsub_v1.SubscriberClient() as subscriber:
-        future = subscriber.subscribe(subscription_name, callback)
+        future = subscriber.subscribe(subscription_name, function_to_call)
         try:
             future.result()
         except Exception as ex:
@@ -70,10 +80,3 @@ def pull_message(project, subscription):
             time.sleep(30)
 
     return future
-
-
-def callback(message):
-    logging.info(f"Received {message}.")
-
-    return message
-    message.ack()
