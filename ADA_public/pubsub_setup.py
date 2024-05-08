@@ -67,7 +67,11 @@ def pull_message(project, subscription):
             )
             time.sleep(30)
 
+    return future
+
 
 def callback(message):
     logging.info(f"Received {message}.")
+
+    return message
     message.ack()
