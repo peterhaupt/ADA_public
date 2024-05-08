@@ -11,16 +11,29 @@ from google.cloud import pubsub_v1
 # https://github.com/googleapis/python-pubsub/blob/master/samples/snippets/subscriber.py
 
 
+def list_topics(project_id):
+    publisher = pubsub_v1.PublisherClient()
+    project_path = f"projects/{project_id}"
+
+    return [
+        topic.name for topic in publisher.list_topics(request={"project": project_path})
+    ]
+
+
 def create_topic(project_id, topic_id):
+
+    publisher = pubsub_v1.PublisherClient()
+    topic_path = publisher.topic_path(project_id, topic_id)
+
+    if topic_path in list_topics(project_id):
+        logging.info(f"Topic {topic_id} already exists.")
+        return
+
     try:
-        publisher = pubsub_v1.PublisherClient()
-        topic_path = publisher.topic_path(project_id, topic_id)
         topic = publisher.create_topic(request={"name": topic_path})
         logging.info("Created topic: {}".format(topic.name))
     except Exception as ex:
-        logging.info(
-            ex
-        )  # instead, can check if there is a topic already, and only if not create a new one
+        logging.error(ex)
 
 
 def publish_message(project_id, topic_id, message):
